@@ -38,7 +38,7 @@ print("Accuracy:", accuracy)
 
 # Prediction on new audio
 folder = 'MAsite'
-new_audio_file = 'MA_front_left.wav' # Path to new audio file
+new_audio_file = 'MA_front.wav' # Path to new audio file
 print("Running Model On: " + folder + "," + new_audio_file)
 new_features = dataProcess.extract_features(folder,new_audio_file)
 prediction = model.predict([new_features])
