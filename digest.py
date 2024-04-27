@@ -29,7 +29,7 @@ class digest:
         generated_data = generator.predict(noise)
         return generated_data
 
-    def data_set(self, augment=False, use_gan=False, gan_epochs=10, gan_batch_size=32, balance = False):
+    def data_set(self, augment=False, use_gan=True, gan_epochs=10, gan_batch_size=32):
         folders = ["MAsite", "MBsite", "MMID", "MTsite"]
         flat_features = []
         tags = []
@@ -142,39 +142,12 @@ class digest:
                     synthetic_cluster_labels = kmeans.predict(synthetic_data)
                     new_labels = [list(set(tags))[label] for label in synthetic_cluster_labels]
                     tags += new_labels
-
-
-        print(Counter(tags))
-        balanced_tags = []
-        balanced_features = []
-        if balance:
-            # Determine the target number of samples per class (e.g., the median count)
-            target_count = np.median(list(Counter(tags).values()))
-
-            class_counts = Counter(tags)
-
-            # Oversample classes with fewer samples
-            for label, count in class_counts.items():
-                # Calculate the oversampling factor based on the current count and target count
-                oversampling_factor = max(int(target_count / count), 1)
-                # Oversample each instance of the current class proportionally to its current count
-                for i in range(count):
-                    balanced_tags.extend([label] * oversampling_factor)
-                    balanced_features.extend([flat_features[i]] * oversampling_factor)
-
-            # Verify the balanced class distribution
-            balanced_class_distribution = Counter(balanced_tags)
-            print(balanced_class_distribution)
-            print(len(balanced_tags), len(balanced_features))
-
-            balanced_data = list(zip(balanced_tags, balanced_features))
-            balanced_tags, balanced_features = zip(*balanced_data)
-
+    
         # Update the features and labels
-        self.features = balanced_features if len(balanced_features) > 0 else flat_features
-        self.labels = balanced_tags if len(balanced_tags) > 0 else tags
+        self.features = flat_features
+        self.labels = tags
 
-        return balanced_tags if len(balanced_tags) > 0 else tags, balanced_features if len(balanced_features) > 0 else flat_features
+        return tags, flat_features
     
     def extract_features(self,directory, file):
         y, sr = librosa.load("./"+directory+"/"+file)
