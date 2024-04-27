@@ -45,6 +45,8 @@ folder = 'MAsite'
 new_audio_file = 'MA_front.wav' # Path to new audio file
 print("Running Model On: " + folder + "," + new_audio_file)
 new_features = dataProcess.extract_features(folder,new_audio_file)
+
+print(new_features.shape)
 prediction = knn.predict([new_features])
 print("Predicted direction:", prediction[0])
 

@@ -123,7 +123,11 @@ class digest:
         return tags, flat_features
     
     def extract_features(self,directory, file):
-        y, sr = librosa.load("./"+directory+"/"+file)
+        if directory == "./":
+            y, sr = librosa.load("./"+file)
+        else:
+            y, sr = librosa.load("./"+directory+"/"+file)
+            
         # Extract features using FFT
         fft_features = np.abs(librosa.stft(y))
         # Flatten the features to create a feature vector
