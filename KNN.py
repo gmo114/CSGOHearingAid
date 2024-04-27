@@ -5,33 +5,46 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
+from digest import digest
 
 
 
-def extract_features():
-    # Load audio file
-    folders = ["MAsite","MBsite","MMID","MTsite"]
-    flat_features = []
-    tags = []
-    for d in folders:
-        for file in os.listdir("./"+d):
-            y, sr = librosa.load("./"+d+"/"+file)
-            # Extract features using FFT
-            fft_features = np.abs(librosa.stft(y))
-            # Flatten the features to create a feature vector
-            sample = np.mean(fft_features, axis=1)
-        
-            sample = np.array_split(sample, 205)
-            flat_features += sample
-           
-            for  a in sample:
-                print(len(a))
-                tags.append(file.split(".")[0])
-    
-    return tags,flat_features
+print("Beginning Data Processing")
+dataProcess = digest()
+y,x = dataProcess.data_set()
+x = np.array(x)
+y = np.array(y)
+print("Data processing complete.")
+print("X shape:", x.shape)
+print("y shape:", y.shape)
+
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
 
-lables,flat_features = extract_features()
-print(len(lables))
-print("\n")
-print(len(flat_features))
+
+# Feature normalization
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# Initialize KNN classifier
+knn = KNeighborsClassifier(n_neighbors=16)  # Adjust k as needed
+
+# Train the classifier
+knn.fit(X_train_scaled, y_train)
+
+# Predict on test data
+y_pred = knn.predict(X_test_scaled)
+
+# Evaluate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+
+folder = 'MAsite'
+new_audio_file = 'MA_front.wav' # Path to new audio file
+print("Running Model On: " + folder + "," + new_audio_file)
+new_features = dataProcess.extract_features(folder,new_audio_file)
+prediction = knn.predict([new_features])
+print("Predicted direction:", prediction[0])
+

@@ -54,6 +54,7 @@ class digest:
                 
                 # Add samples to respective class lists
                 class_label = file.split(".")[0]
+                class_label = "_".join(class_label.split("_")[1:])
                 class_samples[class_label].extend(sample)
 
                 if len(class_samples[class_label]) > max_samples:
@@ -65,7 +66,8 @@ class digest:
             remaining_samples = max_samples % len(samples)
             oversampled_samples += samples[:remaining_samples]
             flat_features += oversampled_samples
-            tags += [label] * len(oversampled_samples)
+            newL = "_".join(label.split("_")[1:])
+            tags += [newL] * len(oversampled_samples)
 
         # If GAN is enabled, generate additional synthetic data
         if use_gan:
@@ -100,7 +102,9 @@ class digest:
                 synthetic_data = np.reshape(synthetic_data, (num_synthetic_samples, 5))
 
                 flat_features += synthetic_data.tolist()
-                tags += [label] * num_synthetic_samples
+                newL = "_".join(label.split("_")[1:])
+
+                tags += [newL] * num_synthetic_samples
                 
         # Balance classes by oversampling
         for label, samples in class_samples.items():
@@ -108,7 +112,8 @@ class digest:
             remaining_samples = max_samples % len(samples)
             oversampled_samples += samples[:remaining_samples]
             flat_features += oversampled_samples
-            tags += [label] * len(oversampled_samples)
+            newL = "_".join(label.split("_")[1:])
+            tags += [newL] * len(oversampled_samples)
 
             # Check lengths after appending synthetic data
         print(len(tags), len(flat_features))
