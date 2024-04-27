@@ -89,21 +89,26 @@ def open_stream(device_index):
 
 
 # Dummy function to analyze the loudness
-def analyze_loudness(data):
+def analyze_loudness(stream):
     temp_wav_file = "temp_audio.wav"
     FORMAT = pyaudio.paInt16  # Audio format (16-bit PCM)
     CHANNELS = 2  # Stereo audio
     RATE = 44100  # Sample rate (Hz)
+    CHUNK = 1024
+    frames = []
+    for _ in range(int(RATE / CHUNK * 2)):
+        data = stream.read(CHUNK, exception_on_overflow=False)
+        frames.append(data)
+
 
     with wave.open(temp_wav_file, 'wb') as wav_file:
         wav_file.setnchannels(CHANNELS)
         wav_file.setsampwidth(audio.get_sample_size(FORMAT))
         wav_file.setframerate(RATE)
-        wav_file.writeframes(data)
+        wav_file.writeframes(b''.join(frames))
 
     data_proccessing = digest()
     return data_proccessing.extract_features("./",temp_wav_file)
-
 
 
 
@@ -134,17 +139,19 @@ def listen():
 
     try:
         while run:
-            data = stream.read(CHUNK, exception_on_overflow=False)
-            volume = analyze_loudness(data) # TODO here is where our analyze() function must go, which determines the direction of the enemies
+    
+            volume = analyze_loudness(stream) # TODO here is where our analyze() function must go, which determines the direction of the enemies
 
             # TODO change the 'if' below to correctly check for the direction depending on our analyze() function
             direction = knn.predict([volume])[0]
+
             print(direction)
+
             if direction == "back":
                 direction = "down"
             elif direction == "front":
                 direction == "up"
-                
+
             elif direction != "left" and direction != "right":
                 direction = "left"
 

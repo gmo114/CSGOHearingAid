@@ -29,7 +29,7 @@ class digest:
         generated_data = generator.predict(noise)
         return generated_data
 
-    def data_set(self, augment=False, use_gan=False, gan_epochs=10, gan_batch_size=32, balance = False):
+    def data_set(self, augment=False, use_gan=True, gan_epochs=10, gan_batch_size=32, balance = False):
         folders = ["MAsite", "MBsite", "MMID", "MTsite"]
         flat_features = []
         tags = []
@@ -181,7 +181,7 @@ class digest:
             y, sr = librosa.load("./"+file)
         else:
             y, sr = librosa.load("./"+directory+"/"+file)
-            
+
         # Extract features using FFT
         fft_features = np.abs(librosa.stft(y))
         # Flatten the features to create a feature vector

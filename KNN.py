@@ -27,7 +27,7 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # Initialize KNN classifier
-knn = KNeighborsClassifier(n_neighbors=16)  # Adjust k as needed
+knn = KNeighborsClassifier(n_neighbors=5)  # Adjust k as needed
 
 # Train the classifier
 knn.fit(X_train_scaled, y_train)
@@ -42,7 +42,7 @@ print("Accuracy:", accuracy)
 
 
 folder = 'MAsite'
-new_audio_file = 'MA_front.wav' # Path to new audio file
+new_audio_file = 'MA_back.wav' # Path to new audio file
 print("Running Model On: " + folder + "," + new_audio_file)
 new_features = dataProcess.extract_features(folder,new_audio_file)
 
