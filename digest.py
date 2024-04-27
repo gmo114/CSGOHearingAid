@@ -4,7 +4,9 @@ import numpy as np
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Reshape, Flatten
 from tensorflow.keras.optimizers import Adam
+from sklearn.cluster import KMeans
 from collections import defaultdict
+from collections import Counter
 
 class digest:
     def __init__(self):
@@ -27,7 +29,7 @@ class digest:
         generated_data = generator.predict(noise)
         return generated_data
 
-    def data_set(self, augment=True, use_gan=True, gan_epochs=10, gan_batch_size=32):
+    def data_set(self, augment=False, use_gan=False, gan_epochs=10, gan_batch_size=32, balance = False):
         folders = ["MAsite", "MBsite", "MMID", "MTsite"]
         flat_features = []
         tags = []
@@ -54,20 +56,18 @@ class digest:
                 
                 # Add samples to respective class lists
                 class_label = file.split(".")[0]
-                class_label = "_".join(class_label.split("_")[1:])
+                class_label = "_".join(word.capitalize() for word in class_label.split("_")[1:])
                 class_samples[class_label].extend(sample)
 
                 if len(class_samples[class_label]) > max_samples:
                     max_samples = len(class_samples[class_label])
-
         # Balance classes by oversampling
         for label, samples in class_samples.items():
             oversampled_samples = samples * (max_samples // len(samples))
             remaining_samples = max_samples % len(samples)
             oversampled_samples += samples[:remaining_samples]
             flat_features += oversampled_samples
-            newL = "_".join(label.split("_")[1:])
-            tags += [newL] * len(oversampled_samples)
+            tags += [label] * len(oversampled_samples)
 
         # If GAN is enabled, generate additional synthetic data
         if use_gan:
@@ -101,26 +101,80 @@ class digest:
                 synthetic_data = np.array(synthetic_data)[:num_synthetic_samples]  # Trim excess samples
                 synthetic_data = np.reshape(synthetic_data, (num_synthetic_samples, 5))
 
-                flat_features += synthetic_data.tolist()
-                newL = "_".join(label.split("_")[1:])
+                flat_features = np.array(flat_features)  # Ensure flat_features is numpy array
+                if flat_features.shape[1] != synthetic_data.shape[1]:
+                    # If shapes don't match, print an error message
+                    print("Error: Shapes of flat_features and synthetic_data don't match.")
+                else:
+                    # Reshape data for GAN training
+                    X_gan = np.array(flat_features)
+                    X_gan = np.reshape(X_gan, (X_gan.shape[0], X_gan.shape[1], 1))
+                    
+                    # Build and train GAN
+                    generator = self.build_generator()
+                    generator.compile(loss='binary_crossentropy', optimizer='adam')
+                    generator.fit(np.random.normal(size=(X_gan.shape[0], 100)), X_gan, epochs=gan_epochs, batch_size=gan_batch_size, verbose=0)
+                    
+                    # Generate synthetic data for each class
+                    synthetic_data = []
+                    max_samples_per_class = 10000
+                    for label, samples in class_samples.items():
+                        num_synthetic_samples = max_samples_per_class - len(samples)
+                        if num_synthetic_samples > 0:
+                            # Generate synthetic data only if needed to balance the class
+                            batch_size = 100  # Adjust batch size as needed
+                            num_batches = (num_synthetic_samples + batch_size - 1) // batch_size
 
-                tags += [newL] * num_synthetic_samples
-                
-        # Balance classes by oversampling
-        for label, samples in class_samples.items():
-            oversampled_samples = samples * (max_samples // len(samples))
-            remaining_samples = max_samples % len(samples)
-            oversampled_samples += samples[:remaining_samples]
-            flat_features += oversampled_samples
-            newL = "_".join(label.split("_")[1:])
-            tags += [newL] * len(oversampled_samples)
+                            for _ in range(num_batches):
+                                batch_synthetic_data = self.generate_data(generator, batch_size)
+                                synthetic_data.extend(batch_synthetic_data)
 
-            # Check lengths after appending synthetic data
-        print(len(tags), len(flat_features))
-        self.features = flat_features
-        self.labels = tags
+                    # Convert synthetic data to numpy array
+                    synthetic_data = np.array(synthetic_data)
+                    synthetic_data = synthetic_data.reshape((synthetic_data.shape[0], synthetic_data.shape[1]))
+                    flat_features = np.concatenate((flat_features, synthetic_data), axis=0)
+                    # Update flat_features with synthetic data
+                    #flat_features += synthetic_data.tolist()
+                    
+                    # Cluster synthetic data to assign new labels
+                    kmeans = KMeans(n_clusters=len(class_samples))
+                    kmeans.fit(synthetic_data)
+                    synthetic_cluster_labels = kmeans.predict(synthetic_data)
+                    new_labels = [list(set(tags))[label] for label in synthetic_cluster_labels]
+                    tags += new_labels
 
-        return tags, flat_features
+
+        print(Counter(tags))
+        balanced_tags = []
+        balanced_features = []
+        if balance:
+            # Determine the target number of samples per class (e.g., the median count)
+            target_count = np.median(list(Counter(tags).values()))
+
+            class_counts = Counter(tags)
+
+            # Oversample classes with fewer samples
+            for label, count in class_counts.items():
+                # Calculate the oversampling factor based on the current count and target count
+                oversampling_factor = max(int(target_count / count), 1)
+                # Oversample each instance of the current class proportionally to its current count
+                for i in range(count):
+                    balanced_tags.extend([label] * oversampling_factor)
+                    balanced_features.extend([flat_features[i]] * oversampling_factor)
+
+            # Verify the balanced class distribution
+            balanced_class_distribution = Counter(balanced_tags)
+            print(balanced_class_distribution)
+            print(len(balanced_tags), len(balanced_features))
+
+            balanced_data = list(zip(balanced_tags, balanced_features))
+            balanced_tags, balanced_features = zip(*balanced_data)
+
+        # Update the features and labels
+        self.features = balanced_features if len(balanced_features) > 0 else flat_features
+        self.labels = balanced_tags if len(balanced_tags) > 0 else tags
+
+        return balanced_tags if len(balanced_tags) > 0 else tags, balanced_features if len(balanced_features) > 0 else flat_features
     
     def extract_features(self,directory, file):
         if directory == "./":
