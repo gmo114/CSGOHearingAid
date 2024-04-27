@@ -25,7 +25,7 @@ print("y_test shape:", y_test.shape)
 
 # Model training
 print("Training")
-model = RandomForestClassifier(n_estimators=100)
+model = RandomForestClassifier(n_estimators=13)
 model.fit(X_train, y_train)
 print("Model training complete.")
 
@@ -37,8 +37,8 @@ print("Evaluation complete.")
 print("Accuracy:", accuracy)
 
 # Prediction on new audio
-folder = 'MAsite'
-new_audio_file = 'MA_front.wav' # Path to new audio file
+folder = 'MMID'
+new_audio_file = 'MM_Right_Left.wav' # Path to new audio file
 print("Running Model On: " + folder + "," + new_audio_file)
 new_features = dataProcess.extract_features(folder,new_audio_file)
 prediction = model.predict([new_features])
