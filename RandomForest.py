@@ -1,5 +1,6 @@
 import numpy as np
 import librosa
+import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -27,6 +28,7 @@ print("y_test shape:", y_test.shape)
 print("Training")
 model = RandomForestClassifier(n_estimators=13)
 model.fit(X_train, y_train)
+joblib.dump(model, 'RandomForest_model.pkl')
 print("Model training complete.")
 
 # Model evaluation
