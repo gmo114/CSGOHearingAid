@@ -1,6 +1,5 @@
 import numpy as np
-import os
-import librosa
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -33,6 +32,7 @@ knn = KNeighborsClassifier(n_neighbors=16)  # Adjust k as needed
 # Train the classifier
 knn.fit(X_train_scaled, y_train)
 
+joblib.dump(knn, 'knn_model.pkl')
 # Predict on test data
 y_pred = knn.predict(X_test_scaled)
 

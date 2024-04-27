@@ -3,6 +3,7 @@ import numpy
 import json
 import os
 
+
 class NeuralNetwork:
     def __init__(self, inputNodes = None, hiddenNodes = None, outputNodes = None, learningRate = None, fromJson = None):
         if fromJson:
@@ -15,6 +16,7 @@ class NeuralNetwork:
         self.inputNodes = inputNodes
         self.hiddenNodes = hiddenNodes
         self.outputNodes = outputNodes
+        
 
         self.weightsInputToHidden = numpy.random.normal(
             0.0,
@@ -110,3 +112,5 @@ class NeuralNetwork:
         
         with open(outputPath, "w") as outfile: 
             json.dump(vals, outfile, indent = 4)
+
+
