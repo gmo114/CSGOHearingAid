@@ -4,12 +4,13 @@
 from threading import *
 import time
 
-import tk
-
+import tkinter as tk
+from digest import digest
 import numpy as np
 import pyaudio
-
+import librosa
 import joblib
+import wave
 
 ##################################################################################################
 # VARIABLES & CONSTANTS
@@ -89,17 +90,20 @@ def open_stream(device_index):
 
 # Dummy function to analyze the loudness
 def analyze_loudness(data):
-    try:
-        # Convert data to integers
-        audio_data = np.frombuffer(data, dtype=np.int16)
-        # Calculate the volume as the RMS of the signal
-        mean_val = np.mean(np.abs(audio_data)**2)
-        if mean_val < 0:
-            mean_val *= -1
-        volume = np.sqrt(mean_val)
-    except:
-        volume = -1
-    return volume
+    temp_wav_file = "temp_audio.wav"
+    FORMAT = pyaudio.paInt16  # Audio format (16-bit PCM)
+    CHANNELS = 2  # Stereo audio
+    RATE = 44100  # Sample rate (Hz)
+
+    with wave.open(temp_wav_file, 'wb') as wav_file:
+        wav_file.setnchannels(CHANNELS)
+        wav_file.setsampwidth(audio.get_sample_size(FORMAT))
+        wav_file.setframerate(RATE)
+        wav_file.writeframes(data)
+
+    data_proccessing = digest()
+    return data_proccessing.extract_features("./",temp_wav_file)
+
 
 
 
@@ -134,21 +138,20 @@ def listen():
             volume = analyze_loudness(data) # TODO here is where our analyze() function must go, which determines the direction of the enemies
 
             # TODO change the 'if' below to correctly check for the direction depending on our analyze() function
-            if volume > 50:  # This is an arbitrary threshold; adjust based on your needs
-                print('I heard that!')
-                direction = knn.predict(data)
+            direction = knn.predict([volume])[0]
+            print(direction)
+            if direction == "back":
+                direction = "down"
+            elif direction == "front":
+                direction == "up"
+                
+            elif direction != "left" and direction != "right":
+                direction = "left"
 
-                if direction == "back":
-                    direction = "down"
-                elif direction == "front":
-                    direction == "up"
-                elif direction != "left" and direction != "right":
-                    direction = "left"
-
-                labels[direction].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)))
-                time.sleep(1)
-                labels[direction].config(font=(DEFAULT_TYPE, DEFAULT_SIZE))
-                time.sleep(1.5)
+            labels[direction].config(fg='blue')
+            time.sleep(1)
+            labels[direction].config(fg='black')
+            time.sleep(1.5)
     except KeyboardInterrupt:
         print("Program stopped.")
 
