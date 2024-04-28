@@ -32,8 +32,8 @@ r = '>'
 l = '<'
 
 labels = {
-    'up': tk.Label(root, text=u, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
-    'down': tk.Label(root, text=d, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
+    'front': tk.Label(root, text=u, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
+    'back': tk.Label(root, text=d, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
     'right': tk.Label(root, text=r, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
     'left': tk.Label(root, text=l, font=(DEFAULT_TYPE, DEFAULT_SIZE))
 }
@@ -58,8 +58,8 @@ button = tk.Button(
 )
 button.pack(side='left', padx=(PADDING,0))
 
-labels['up'].pack(side='top', pady=(PADDING,0))
-labels['down'].pack(side='bottom', pady=(0,PADDING))
+labels['front'].pack(side='top', pady=(PADDING,0))
+labels['back'].pack(side='bottom', pady=(0,PADDING))
 labels['right'].pack(side='right', padx=(0,PADDING))
 labels['left'].pack(side='left', padx=(PADDING,0))
 
@@ -143,22 +143,80 @@ def listen():
             volume = analyze_loudness(stream) # TODO here is where our analyze() function must go, which determines the direction of the enemies
 
             # TODO change the 'if' below to correctly check for the direction depending on our analyze() function
-            direction = knn.predict([volume])[0]
+            prediction = knn.predict([volume])[0]
 
-            print(direction)
+            prediction = prediction.lower()
 
-            if direction == "back":
-                direction = "down"
-            elif direction == "front":
-                direction == "up"
+            if prediction.lower() == 'front_left':
+                labels['left'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                labels['front'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels['left'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                labels['front'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
 
-            elif direction != "left" and direction != "right":
-                direction = "left"
+            elif prediction.lower() == 'left_right':
+                labels['left'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                labels['front'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels['left'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                labels['front'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
+            
+            elif prediction.lower() == 'front_right':
+                labels['front'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                labels['right'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels['front'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                labels['right'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
+            
+            elif prediction.lower() == 'right_left':
+                labels['front'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                labels['right'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels['front'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                labels['right'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
+            
+            elif prediction.lower() == 'right_right':
+                labels['right'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                labels['back'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels['right'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                labels['back'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
+            
+            elif prediction.lower() == 'back_right':
+                labels['right'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                labels['back'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels['right'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                labels['back'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
+            
+            elif prediction.lower() == 'left_left':
+                labels['left'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                labels['back'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels['left'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                labels['back'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
+            
+            elif prediction.lower() == 'back_left':
+                labels['left'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                labels['back'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels['left'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                labels['back'].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
+            
+            else:
+                labels[prediction].config(font=(DEFAULT_TYPE, DEFAULT_SIZE + (DEFAULT_SIZE//2)), fg='blue')
+                time.sleep(1)
+                labels[prediction].config(font=(DEFAULT_TYPE, DEFAULT_SIZE), fg='black')
+                time.sleep(1.5)
 
-            labels[direction].config(fg='blue')
-            time.sleep(1)
-            labels[direction].config(fg='black')
-            time.sleep(1.5)
     except KeyboardInterrupt:
         print("Program stopped.")
 
