@@ -10,7 +10,7 @@ import tkinter as tk
 import numpy as np
 import pyaudio
 
-from CNN import NeuralNetwork
+from MLP import NeuralNetwork
 
 ##################################################################################################
 # VARIABLES & CONSTANTS
@@ -32,8 +32,8 @@ r = '>'
 l = '<'
 
 labels = {
-    'up': tk.Label(root, text=u, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
-    'down': tk.Label(root, text=d, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
+    'front': tk.Label(root, text=u, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
+    'back': tk.Label(root, text=d, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
     'right': tk.Label(root, text=r, font=(DEFAULT_TYPE, DEFAULT_SIZE)),
     'left': tk.Label(root, text=l, font=(DEFAULT_TYPE, DEFAULT_SIZE))
 }
@@ -58,8 +58,8 @@ button = tk.Button(
 )
 button.pack(side='left', padx=(PADDING,0))
 
-labels['up'].pack(side='top', pady=(PADDING,0))
-labels['down'].pack(side='bottom', pady=(0,PADDING))
+labels['front'].pack(side='top', pady=(PADDING,0))
+labels['back'].pack(side='bottom', pady=(0,PADDING))
 labels['right'].pack(side='right', padx=(0,PADDING))
 labels['left'].pack(side='left', padx=(PADDING,0))
 
