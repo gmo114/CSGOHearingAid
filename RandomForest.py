@@ -3,7 +3,7 @@ import librosa
 import joblib
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
 from digest import digest
 
 print("Beginning Data Processing")
@@ -35,12 +35,18 @@ print("Model training complete.")
 print("Evaluating")
 y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred, average='weighted')
+recall = recall_score(y_test, y_pred, average='weighted')
+conf_matrix = confusion_matrix(y_test, y_pred)
 print("Evaluation complete.")
 print("Accuracy:", accuracy)
+print("Precision:", precision)
+print("Recall:", recall)
+print("Confusion Matrix:\n", conf_matrix)
 
 # Prediction on new audio
 folder = 'MMID'
-new_audio_file = 'MM_Right_Left.wav' # Path to new audio file
+new_audio_file = 'MM_Right.wav' # Path to new audio file
 print("Running Model On: " + folder + "," + new_audio_file)
 new_features = dataProcess.extract_features(folder,new_audio_file)
 prediction = model.predict([new_features])
