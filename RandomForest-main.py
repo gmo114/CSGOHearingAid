@@ -140,9 +140,8 @@ def listen():
 
     try:
         while run:
-            volume = analyze_loudness(stream) # TODO here is where our analyze() function must go, which determines the direction of the enemies
+            volume = analyze_loudness(stream)
 
-            # TODO change the 'if' below to correctly check for the direction depending on our analyze() function
             prediction  = Random_Forest.predict([volume])[0]
             prediction = prediction.lower()
 
